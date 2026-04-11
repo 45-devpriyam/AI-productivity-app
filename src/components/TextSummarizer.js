@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { sendMessageToAI } from '../services/openai';
+import { summarizeText } from '../services/openai';
 
 const TextSummarizer = () => {
   const [inputText, setInputText] = useState('');
@@ -13,11 +13,8 @@ const TextSummarizer = () => {
     setIsSummarizing(true);
     
     try {
-      // Use simple prompt format as requested
-      const prompt = `Summarize this: ${inputText}`;
-      
-      // Send to OpenRouter API
-      const aiResponse = await sendMessageToAI(prompt);
+      // Send to backend summarization API
+      const aiResponse = await summarizeText(inputText);
       setSummary(aiResponse);
       setIsSummarizing(false);
     } catch (error) {

@@ -1,19 +1,26 @@
 import React, { useState } from "react";
+import { generateImage } from "../services/openai";
 
 const ImageGenerator = () => {
   const [prompt, setPrompt] = useState("");
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleGenerate = () => {
-    if (!prompt) return;
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
     setLoading(true);
+    setError("");
+    setImage("");
 
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-
-    setImage(imageUrl);   
-    setLoading(false);    
-    console.log(imageUrl);
+    try {
+      const imageUrl = await generateImage(prompt);
+      setImage(imageUrl);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,7 +63,33 @@ const ImageGenerator = () => {
           {image && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 transition-colors duration-300">Generated Image</h2>
-              <img src={image} alt="Generated" className="w-full h-full object-cover rounded-lg transition-colors duration-300" />
+              <img 
+                src={image} 
+                alt="Generated" 
+                className="w-full h-full object-cover rounded-lg transition-colors duration-300" 
+                onError={(e) => {
+                  console.error("Image loading error:", e);
+                  console.error("Failed image URL:", image);
+                  setError("Failed to load generated image");
+                }}
+                onLoad={() => {
+                  console.log("Image loaded successfully from URL:", image);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300">
+              <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4 transition-colors duration-300">Generation Failed</h2>
+              <p className="text-gray-700 dark:text-gray-300 transition-colors duration-300">{error}</p>
+              <button
+                onClick={() => setError("")}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition-colors duration-300"
+              >
+                Try Again
+              </button>
             </div>
           )}
 
@@ -65,9 +98,9 @@ const ImageGenerator = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 transition-colors duration-300">
               <div className="flex flex-col items-center justify-center">
                 <div className="flex space-x-2 mb-4">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 transition-colors duration-300">Generating your image...</p>
               </div>
