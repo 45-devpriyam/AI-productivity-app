@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Backend API URL
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 export const sendMessageToAI = async (message) => {
   try {
